@@ -1,2 +1,10 @@
-# TaskTok
-[ECCV 2026] TaskTok: Delving into Task Tokens for Task-driven Image Restoration
+# TaskTok: Delving into Task Tokens for Task-driven Image Restoration
+
+<p align="center">
+  <img src="tasktok_logo.png" alt="tasktok_logo.png" width="70%">
+</p>
+
+Official implementation of "TaskTok: Delving into Task Tokens for Task-driven Image Restoration [ECCV 2026]".
+(Paper @ [ArXiv](https://arxiv.org/abs/)).
+
+>🛠️ The code will be available soon.
