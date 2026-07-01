@@ -1,0 +1,103 @@
+model:
+  titok:
+    pretrained: yucornetto/tokenizer_titok_bl64_vq8k_imagenet
+
+  # Classification network
+  clsnet:
+    target: model.resnet.ResNet
+    params:
+      type: 18
+      num_classes: 1000
+
+  # Detection network
+  detnet:
+    target: model.faster_rcnn.fasterrcnn_mobilenet_v3_large_fpn
+    params:
+      weights_backbone: MobileNet_V3_Large_Weights.IMAGENET1K_V1
+      num_classes: 21
+
+  # Segmentation network
+  segnet:
+    target: model.deeplabv3.deeplabv3_mobilenet_v3_large
+    params:
+      weights_backbone: MobileNet_V3_Large_Weights.IMAGENET1K_V1
+      num_classes: 21
+      aux_loss: false
+
+dataset:
+  cls:
+    train:
+      target: datasets.classification.DegradedClassificationDataset
+      params:
+        root: ../datasets/imagenet/train
+        file_backend_cfg:
+          target: datasets.file_backend.HardDiskBackend
+        gt_size: 576
+        out_size: 512
+        hflip: false
+        rotation: false
+        crop_type: center
+        blur_kernel_size: 41
+        kernel_list: ['iso', 'aniso']
+        kernel_prob: [0.5, 0.5]
+        blur_sigma: [0.1, 8]
+        downsample_range: [1, 16]
+        noise_range: [0, 10]
+        jpeg_range: [50, 100]
+
+  det:
+    train:
+      target: datasets.detection.DegradedDetectionDataset
+      params:
+        root: ../datasets/VOC
+        year: '2012'
+        image_set: train
+        file_backend_cfg:
+          target: datasets.file_backend.HardDiskBackend
+        gt_size: 512
+        out_size: 512
+        hflip: false
+        rotation: false
+        crop_type: none
+        blur_kernel_size: 41
+        kernel_list: ['iso', 'aniso']
+        kernel_prob: [0.5, 0.5]
+        blur_sigma: [0.1, 8]
+        downsample_range: [1, 16]
+        noise_range: [0, 10]
+        jpeg_range: [50, 100]
+
+  seg:
+    train:
+      target: datasets.segmentation.DegradedSegmentationDataset
+      params:
+        root: ../datasets/VOC
+        year: '2012'
+        image_set: train
+        file_backend_cfg:
+          target: datasets.file_backend.HardDiskBackend
+        gt_size: 560
+        resize_range: [0.5, 2.0]
+        out_size: 512
+        crop_type: random
+        hflip: false
+        rotation: false
+        blur_kernel_size: 41
+        kernel_list: ['iso', 'aniso']
+        kernel_prob: [0.5, 0.5]
+        blur_sigma: [0.1, 8]
+        downsample_range: [1, 16]
+        noise_range: [0, 10]
+        jpeg_range: [50, 100]
+
+test:
+  precision: fp16
+  exp_dir: experiments/greedy_search_bl64
+  batch_size: 32
+  num_workers: 4
+  
+  # Model checkpoints (optional - set to load trained weights)
+  resume_tasktok: ~
+  resume_clsnet: ResNet18_Weights.IMAGENET1K_V1
+  resume_detnet: weights/detnet_oracle.pt
+  resume_segnet: weights/segnet_oracle.pt

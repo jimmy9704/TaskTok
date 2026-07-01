@@ -1,0 +1,100 @@
+model:
+  pre_restoration: True
+  swinir:
+    target: model.swinir.SwinIR
+    params:
+      img_size: 64
+      patch_size: 1
+      in_chans: 3
+      embed_dim: 180
+      depths: [3, 3, 3, 3]
+      num_heads: [6, 6, 6, 6]
+      window_size: 8
+      mlp_ratio: 2
+      sf: 8
+      img_range: 1.0
+      upsampler: "nearest+conv"
+      resi_connection: "1conv"
+      unshuffle: True
+      unshuffle_scale: 8
+
+  titok:
+    pretrained: yucornetto/tokenizer_titok_sl256_vq8k_imagenet
+    resize_input: true
+
+  token_predictor:
+    target: model.token_predictor.TokenPredictor
+    params:
+      d_model: 512
+      n_heads: 8
+      n_layers: 6
+
+  clsnet:
+    target: model.resnet.ResNet
+    params:
+      type: 18
+      num_classes: 1000
+
+  detnet:
+    target: model.faster_rcnn.fasterrcnn_mobilenet_v3_large_fpn
+    params:
+      weights_backbone: MobileNet_V3_Large_Weights.IMAGENET1K_V1
+      num_classes: 21
+
+  segnet:
+    target: model.deeplabv3.deeplabv3_mobilenet_v3_large
+    params:
+      weights_backbone: MobileNet_V3_Large_Weights.IMAGENET1K_V1
+      num_classes: 21
+      aux_loss: false
+
+dataset:
+  cls:
+    val:
+      target: datasets.classification.PairedClassificationDataset
+      params:
+        root: ./datasets/source/Imagenet/val-mixb
+        file_backend_cfg:
+          target: datasets.file_backend.HardDiskBackend
+
+  det:
+    val:
+      target: datasets.detection.PairedDetectionDataset
+      params:
+        root: ./datasets/source/VOC
+        path: JPEGImagesDet-mixb
+        gt_size: 512
+        year: '2012'
+        image_set: val
+        file_backend_cfg:
+          target: datasets.file_backend.HardDiskBackend
+
+  seg:
+    val:
+      target: datasets.segmentation.PairedSegmentationDataset
+      params:
+        root: ./datasets/source/VOC
+        path: JPEGImagesSeg-mixb
+        year: '2012'
+        image_set: val
+        file_backend_cfg:
+          target: datasets.file_backend.HardDiskBackend
+
+test:
+  output_dir: experiments/joint/tasktok_sl256_input512/test_results
+  ckpt_dir: experiments/joint/tasktok_sl256_input512/checkpoints
+
+  resume_swinir: weights/codeformer_swinir_tiny.pt
+
+  resume_tasktok: ~
+  resume_token_predictor: ~
+
+  resume_clsnet: ~
+  resume_detnet: ~
+  resume_segnet: ~
+
+  batch_size: 32
+  num_workers: 4
+
+  save_images: false
+  save_csv: true
