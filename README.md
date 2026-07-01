@@ -172,8 +172,8 @@ CUDA_VISIBLE_DEVICES=0 python main/greedy_search.py --config configs/greedy_sear
 Precomputed greedy token orders are also provided under:
 
 ```text
-experiments/joint/greedy_search_bl64/greedy_token_order.pt
-experiments/joint/greedy_search_sl256/greedy_token_order.pt
+experiments/greedy_search_bl64/greedy_token_order.pt
+experiments/greedy_search_sl256/greedy_token_order.pt
 ```
 
 If you use the provided greedy token orders, please make sure the `greedy_token_order` path in the training config points to the corresponding file.
